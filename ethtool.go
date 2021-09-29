@@ -173,9 +173,9 @@ type TsInfo struct {
 	Cmd            uint32
 	SoTimestamping map[string]uint
 	PhcIndex       int32
-	TxTypes        map[string]uint32
+	TxTypes        uint32
 	TxReserved     uint32
-	RxFilters      map[string]uint32
+	RxFilters      uint32
 	RxReserved     uint32
 }
 
@@ -316,56 +316,13 @@ func (e *Ethtool) TimestampInfo(intf string) (TsInfo, error) {
 		}
 	}
 
-	supportedTxTypes := []string{
-		"HWTSTAMP_TX_OFF",
-		"HWTSTAMP_TX_ON",
-		"HWTSTAMP_TX_ONESTEP_SYNC",
-	}
-
-	txTypes := make(map[string]uint32)
-
-	for i := 0; i < len(supportedTxTypes); i++ {
-		txType := info.txTypes & (1 << i)
-		if txType != 0 {
-			txTypes[supportedTxTypes[i]] = txType
-		}
-	}
-
-	supportedRxFilters := []string{
-		"HWTSTAMP_FILTER_NONE",
-		"HWTSTAMP_FILTER_ALL",
-		"HWTSTAMP_FILTER_SOME",
-		"HWTSTAMP_FILTER_PTP_V1_L4_EVENT",
-		"HWTSTAMP_FILTER_PTP_V1_L4_SYNC",
-		"HWTSTAMP_FILTER_PTP_V1_L4_DELAY_REQ",
-		"HWTSTAMP_FILTER_PTP_V2_L4_EVENT",
-		"HWTSTAMP_FILTER_PTP_V2_L4_SYNC",
-		"HWTSTAMP_FILTER_PTP_V2_L4_DELAY_REQ",
-		"HWTSTAMP_FILTER_PTP_V2_L2_EVENT",
-		"HWTSTAMP_FILTER_PTP_V2_L2_SYNC",
-		"HWTSTAMP_FILTER_PTP_V2_L2_DELAY_REQ",
-		"HWTSTAMP_FILTER_PTP_V2_EVENT",
-		"HWTSTAMP_FILTER_PTP_V2_SYNC",
-		"HWTSTAMP_FILTER_PTP_V2_DELAY_REQ",
-		"HWTSTAMP_FILTER_NTP_ALL",
-	}
-
-	rxFilters := make(map[string]uint32)
-
-	for i := 0; i < len(supportedRxFilters); i++ {
-		rxFilter := info.txTypes & (1 << i)
-		if rxFilter != 0 {
-			rxFilters[supportedRxFilters[i]] = rxFilter
-		}
-	}
-
 	tsInfo := TsInfo{
 		Cmd:            info.cmd,
 		SoTimestamping: soTimestamping,
 		PhcIndex:       info.phcIndex,
-		TxTypes:        txTypes,
+		TxTypes:        info.txTypes,
 		TxReserved:     info.txReserved,
-		RxFilters:      rxFilters,
+		RxFilters:      info.rxFilters,
 		RxReserved:     info.rxReserved,
 	}
 
