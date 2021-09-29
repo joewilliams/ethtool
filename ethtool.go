@@ -327,7 +327,7 @@ func (e *Ethtool) TimestampInfo(intf string) (TsInfo, error) {
 	for i := 0; i < len(supportedTxTypes)+1; i++ {
 		txType := info.txTypes & (1 << i)
 		if txType != 0 {
-			txTypes[supportedTxTypes[txType]] = txType
+			txTypes[supportedTxTypes[i]] = txType
 		}
 	}
 
@@ -355,7 +355,7 @@ func (e *Ethtool) TimestampInfo(intf string) (TsInfo, error) {
 	for i := 0; i < len(supportedRxFilters)+1; i++ {
 		rxFilter := info.txTypes & (1 << i)
 		if rxFilter != 0 {
-			rxFilters[supportedRxFilters[rxFilter]] = rxFilter
+			rxFilters[supportedRxFilters[i]] = rxFilter
 		}
 	}
 
