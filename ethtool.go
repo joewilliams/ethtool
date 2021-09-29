@@ -63,7 +63,8 @@ const (
 	ETHTOOL_GCOALESCE = 0x0000000e /* Get coalesce config */
 	/* Get link status for host, i.e. whether the interface *and* the
 	 * physical port (if there is one) are up (ethtool_value). */
-	ETHTOOL_GLINK         = 0x0000000a
+	ETHTOOL_GLINK = 0x0000000a
+	// https://elixir.bootlin.com/linux/latest/source/include/uapi/linux/ethtool.h#L1535
 	ETHTOOL_GET_TS_INFO   = 0x00000041 /* Get timestamp support info */
 	ETHTOOL_GMODULEINFO   = 0x00000042 /* Get plug-in module information */
 	ETHTOOL_GMODULEEEPROM = 0x00000043 /* Get plug-in module eeprom */
@@ -152,10 +153,11 @@ type DrvInfo struct {
 	RegdumpLen  uint32
 }
 
+// https://elixir.bootlin.com/linux/latest/source/include/uapi/linux/ethtool.h#L1334
 type ethtoolTsInfo struct {
 	cmd            uint32
 	soTimestamping uint32
-	phcIndex       uint32
+	phcIndex       int32
 	txTypes        uint32
 	txReserved     uint32
 	rxFilters      uint32
@@ -166,7 +168,7 @@ type ethtoolTsInfo struct {
 type TsInfo struct {
 	Cmd            uint32
 	SoTimestamping uint32
-	PhcIndex       uint32
+	PhcIndex       int32
 	TxTypes        uint32
 	TxReserved     uint32
 	RxFilters      uint32
@@ -283,7 +285,13 @@ func (e *Ethtool) TimestampInfo(intf string) (TsInfo, error) {
 	tsInfo := TsInfo{
 		Cmd:            info.cmd,
 		SoTimestamping: info.soTimestamping,
+		PhcIndex:       info.phcIndex,
+		TxTypes:        info.txTypes,
+		TxReserved:     info.txReserved,
+		RxFilters:      info.rxFilters,
+		RxReserved:     info.rxReserved,
 	}
+
 	return tsInfo, nil
 }
 
