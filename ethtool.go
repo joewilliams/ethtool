@@ -307,7 +307,7 @@ func (e *Ethtool) TimestampInfo(intf string) (TsInfo, error) {
 	var stringSoTimestamping []string
 
 	for i, _ := range mapSoTimestamping {
-		stringSoTimestamping = append(stringSoTimestamping, mapSoTimestamping[1<<i])
+		stringSoTimestamping = append(stringSoTimestamping, mapSoTimestamping[info.soTimestamping&1<<i])
 	}
 
 	tsInfo := TsInfo{
