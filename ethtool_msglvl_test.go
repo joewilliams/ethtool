@@ -1,3 +1,5 @@
+//+build linux
+
 /*
  *
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -47,7 +49,7 @@ func TestMsglvlGet(t *testing.T) {
 	// fake success if run on travis
 	if os.Getenv("TRAVIS") == "true" {
 		fmt.Println("testing on travis.")
-		if ! success {
+		if !success {
 			fmt.Println("testing msglvl force success on travis.")
 			success = true
 		}
