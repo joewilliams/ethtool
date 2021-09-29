@@ -285,6 +285,7 @@ func (e *Ethtool) TimestampInfo(intf string) (TsInfo, error) {
 		return TsInfo{}, err
 	}
 
+	// https://github.com/golang/sys/blob/master/unix/linux/types.go#L2320
 	var mapSoTimestamping = map[uint32]string{
 		unix.SOF_TIMESTAMPING_TX_HARDWARE:  "SOF_TIMESTAMPING_TX_HARDWARE",
 		unix.SOF_TIMESTAMPING_TX_SOFTWARE:  "SOF_TIMESTAMPING_TX_SOFTWARE",
@@ -303,7 +304,7 @@ func (e *Ethtool) TimestampInfo(intf string) (TsInfo, error) {
 		unix.SOF_TIMESTAMPING_OPT_TX_SWHW:  "SOF_TIMESTAMPING_OPT_TX_SWHW",
 	}
 
-	stringSoTimestamping := mapSoTimestamping[info.soTimestamping]
+	stringSoTimestamping := mapSoTimestamping[1<<info.soTimestamping]
 
 	tsInfo := TsInfo{
 		Cmd:            info.cmd,
