@@ -169,7 +169,7 @@ type ethtoolTsInfo struct {
 // TsInfo contains timestamp information
 type TsInfo struct {
 	Cmd            uint32
-	SoTimestamping []string
+	SoTimestamping map[string]uint
 	PhcIndex       int32
 	TxTypes        uint32
 	TxReserved     uint32
@@ -305,18 +305,18 @@ func (e *Ethtool) TimestampInfo(intf string) (TsInfo, error) {
 		unix.SOF_TIMESTAMPING_OPT_TX_SWHW:  "SOF_TIMESTAMPING_OPT_TX_SWHW",
 	}
 
-	var stringSoTimestamping []string
+	var soTimestamping = make(map[string]uint)
 
 	for i := 0; i < len(supportedTsModes); i++ {
 		mode := info.soTimestamping & (1 << i)
 		if mode != 0 {
-			stringSoTimestamping = append(stringSoTimestamping, supportedTsModes[uint(mode)])
+			soTimestamping[supportedTsModes[uint(mode)]] = uint(mode)
 		}
 	}
 
 	tsInfo := TsInfo{
 		Cmd:            info.cmd,
-		SoTimestamping: stringSoTimestamping,
+		SoTimestamping: soTimestamping,
 		PhcIndex:       info.phcIndex,
 		TxTypes:        info.txTypes,
 		TxReserved:     info.txReserved,
