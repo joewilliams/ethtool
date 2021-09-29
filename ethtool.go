@@ -173,9 +173,9 @@ type TsInfo struct {
 	Cmd            uint32
 	SoTimestamping map[string]uint
 	PhcIndex       int32
-	TxTypes        map[string]uint
+	TxTypes        map[string]uint32
 	TxReserved     uint32
-	RxFilters      map[string]uint
+	RxFilters      map[string]uint32
 	RxReserved     uint32
 }
 
@@ -322,12 +322,12 @@ func (e *Ethtool) TimestampInfo(intf string) (TsInfo, error) {
 		"HWTSTAMP_TX_ONESTEP_SYNC",
 	}
 
-	txTypes := make(map[string]uint)
+	txTypes := make(map[string]uint32)
 
 	for i := 0; i < len(supportedTxTypes)+1; i++ {
 		txType := info.txTypes & (1 << i)
 		if txType != 0 {
-			txTypes[supportedTxTypes[uint(txType)]] = uint(txType)
+			txTypes[supportedTxTypes[txType]] = txType
 		}
 	}
 
@@ -350,12 +350,12 @@ func (e *Ethtool) TimestampInfo(intf string) (TsInfo, error) {
 		"HWTSTAMP_FILTER_NTP_ALL",
 	}
 
-	rxFilters := make(map[string]uint)
+	rxFilters := make(map[string]uint32)
 
 	for i := 0; i < len(supportedRxFilters)+1; i++ {
 		rxFilter := info.txTypes & (1 << i)
 		if rxFilter != 0 {
-			rxFilters[supportedRxFilters[uint(rxFilter)]] = uint(rxFilter)
+			rxFilters[supportedRxFilters[rxFilter]] = rxFilter
 		}
 	}
 
