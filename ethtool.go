@@ -64,6 +64,7 @@ const (
 	/* Get link status for host, i.e. whether the interface *and* the
 	 * physical port (if there is one) are up (ethtool_value). */
 	ETHTOOL_GLINK         = 0x0000000a
+	ETHTOOL_GET_TS_INFO   = 0x00000041 /* Get timestamp support info */
 	ETHTOOL_GMODULEINFO   = 0x00000042 /* Get plug-in module information */
 	ETHTOOL_GMODULEEEPROM = 0x00000043 /* Get plug-in module eeprom */
 	ETHTOOL_GPERMADDR     = 0x00000020
@@ -149,6 +150,27 @@ type DrvInfo struct {
 	TestInfoLen uint32
 	EedumpLen   uint32
 	RegdumpLen  uint32
+}
+
+type ethtoolTsInfo struct {
+	cmd            uint32
+	soTimestamping uint32
+	phcIndex       uint32
+	txTypes        uint32
+	txReserved     uint32
+	rxFilters      uint32
+	rxReserved     uint32
+}
+
+// TsInfo contains timestamp information
+type TsInfo struct {
+	Cmd            uint32
+	SoTimestamping uint32
+	PhcIndex       uint32
+	TxTypes        uint32
+	TxReserved     uint32
+	RxFilters      uint32
+	RxReserved     uint32
 }
 
 // Channels contains the number of channels for a given interface.
@@ -250,6 +272,19 @@ func (e *Ethtool) BusInfo(intf string) (string, error) {
 		return "", err
 	}
 	return string(bytes.Trim(info.bus_info[:], "\x00")), nil
+}
+
+// TimestampInfo returns the timstamp support information of the given interface name.
+func (e *Ethtool) TimestampInfo(intf string) (TsInfo, error) {
+	info, err := e.getTimestampInfo(intf)
+	if err != nil {
+		return TsInfo{}, err
+	}
+	tsInfo := TsInfo{
+		Cmd:            info.cmd,
+		SoTimestamping: info.soTimestamping,
+	}
+	return tsInfo, nil
 }
 
 // ModuleEeprom returns Eeprom information of the given interface name.
@@ -377,6 +412,18 @@ func (e *Ethtool) getDriverInfo(intf string) (ethtoolDrvInfo, error) {
 	}
 
 	return drvinfo, nil
+}
+
+func (e *Ethtool) getTimestampInfo(intf string) (ethtoolTsInfo, error) {
+	tsinfo := ethtoolTsInfo{
+		cmd: ETHTOOL_GET_TS_INFO,
+	}
+
+	if err := e.ioctl(intf, uintptr(unsafe.Pointer(&tsinfo))); err != nil {
+		return ethtoolTsInfo{}, err
+	}
+
+	return tsinfo, nil
 }
 
 func (e *Ethtool) getChannels(intf string) (Channels, error) {
