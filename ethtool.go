@@ -86,6 +86,8 @@ const (
 	PERMADDR_LEN       = 32
 )
 
+const ()
+
 type ifreq struct {
 	ifr_name [IFNAMSIZ]byte
 	ifr_data uintptr
@@ -322,10 +324,10 @@ func (e *Ethtool) TimestampInfo(intf string) (TsInfo, error) {
 
 	txTypes := make(map[string]uint)
 
-	for i, _ := range supportedTxTypes {
+	for i := 0; i < len(supportedTxTypes)+1; i++ {
 		txType := info.txTypes & (1 << i)
 		if txType != 0 {
-			txTypes[supportedTxTypes[i]] = uint(txType)
+			txTypes[supportedTxTypes[uint(txType)]] = uint(txType)
 		}
 	}
 
@@ -350,10 +352,10 @@ func (e *Ethtool) TimestampInfo(intf string) (TsInfo, error) {
 
 	rxFilters := make(map[string]uint)
 
-	for i, _ := range supportedRxFilters {
-		rxFilter := info.rxFilters & (1 << i)
+	for i := 0; i < len(supportedRxFilters)+1; i++ {
+		rxFilter := info.txTypes & (1 << i)
 		if rxFilter != 0 {
-			rxFilters[supportedRxFilters[i]] = uint(rxFilter)
+			rxFilters[supportedRxFilters[uint(rxFilter)]] = uint(rxFilter)
 		}
 	}
 
