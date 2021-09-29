@@ -169,7 +169,7 @@ type ethtoolTsInfo struct {
 // TsInfo contains timestamp information
 type TsInfo struct {
 	Cmd            uint32
-	SoTimestamping string
+	SoTimestamping []string
 	PhcIndex       int32
 	TxTypes        uint32
 	TxReserved     uint32
@@ -286,25 +286,29 @@ func (e *Ethtool) TimestampInfo(intf string) (TsInfo, error) {
 	}
 
 	// https://github.com/golang/sys/blob/master/unix/linux/types.go#L2320
-	var mapSoTimestamping = map[uint32]string{
-		unix.SOF_TIMESTAMPING_TX_HARDWARE:  "SOF_TIMESTAMPING_TX_HARDWARE",
-		unix.SOF_TIMESTAMPING_TX_SOFTWARE:  "SOF_TIMESTAMPING_TX_SOFTWARE",
-		unix.SOF_TIMESTAMPING_RX_HARDWARE:  "SOF_TIMESTAMPING_RX_HARDWARE",
-		unix.SOF_TIMESTAMPING_RX_SOFTWARE:  "SOF_TIMESTAMPING_RX_SOFTWARE",
-		unix.SOF_TIMESTAMPING_SOFTWARE:     "SOF_TIMESTAMPING_SOFTWARE",
-		unix.SOF_TIMESTAMPING_SYS_HARDWARE: "SOF_TIMESTAMPING_SYS_HARDWARE",
-		unix.SOF_TIMESTAMPING_RAW_HARDWARE: "SOF_TIMESTAMPING_RAW_HARDWARE",
-		unix.SOF_TIMESTAMPING_OPT_ID:       "SOF_TIMESTAMPING_OPT_ID",
-		unix.SOF_TIMESTAMPING_TX_SCHED:     "SOF_TIMESTAMPING_TX_SCHED",
-		unix.SOF_TIMESTAMPING_TX_ACK:       "SOF_TIMESTAMPING_TX_ACK",
-		unix.SOF_TIMESTAMPING_OPT_CMSG:     "SOF_TIMESTAMPING_OPT_CMSG",
-		unix.SOF_TIMESTAMPING_OPT_TSONLY:   "SOF_TIMESTAMPING_OPT_TSONLY",
-		unix.SOF_TIMESTAMPING_OPT_STATS:    "SOF_TIMESTAMPING_OPT_STATS",
-		unix.SOF_TIMESTAMPING_OPT_PKTINFO:  "SOF_TIMESTAMPING_OPT_PKTINFO",
-		unix.SOF_TIMESTAMPING_OPT_TX_SWHW:  "SOF_TIMESTAMPING_OPT_TX_SWHW",
+	var mapSoTimestamping = []string{
+		"SOF_TIMESTAMPING_TX_HARDWARE",
+		"SOF_TIMESTAMPING_TX_SOFTWARE",
+		"SOF_TIMESTAMPING_RX_HARDWARE",
+		"SOF_TIMESTAMPING_RX_SOFTWARE",
+		"SOF_TIMESTAMPING_SOFTWARE",
+		"SOF_TIMESTAMPING_SYS_HARDWARE",
+		"SOF_TIMESTAMPING_RAW_HARDWARE",
+		"SOF_TIMESTAMPING_OPT_ID",
+		"SOF_TIMESTAMPING_TX_SCHED",
+		"SOF_TIMESTAMPING_TX_ACK",
+		"SOF_TIMESTAMPING_OPT_CMSG",
+		"SOF_TIMESTAMPING_OPT_TSONLY",
+		"SOF_TIMESTAMPING_OPT_STATS",
+		"SOF_TIMESTAMPING_OPT_PKTINFO",
+		"SOF_TIMESTAMPING_OPT_TX_SWHW",
 	}
 
-	stringSoTimestamping := mapSoTimestamping[1<<info.soTimestamping]
+	var stringSoTimestamping []string
+
+	for i, _ := range mapSoTimestamping {
+		stringSoTimestamping = append(stringSoTimestamping, mapSoTimestamping[1<<i])
+	}
 
 	tsInfo := TsInfo{
 		Cmd:            info.cmd,
