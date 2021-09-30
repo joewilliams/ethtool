@@ -171,11 +171,11 @@ type ethtoolTsInfo struct {
 // TsInfo contains timestamp information
 type TsInfo struct {
 	Cmd            uint32
-	SoTimestamping uint32
+	SoTimestamping map[string]uint
 	PhcIndex       int32
-	TxTypes        uint32
+	TxTypes        map[string]uint32
 	TxReserved     uint32
-	RxFilters      uint32
+	RxFilters      map[string]uint32
 	RxReserved     uint32
 }
 
@@ -287,13 +287,85 @@ func (e *Ethtool) TimestampInfo(intf string) (TsInfo, error) {
 		return TsInfo{}, err
 	}
 
+	// https://pkg.go.dev/golang.org/x/sys/unix#SOF_TIMESTAMPING_TX_HARDWARE
+	supportedTsModes := map[uint]string{
+		unix.SOF_TIMESTAMPING_TX_HARDWARE:  "SOF_TIMESTAMPING_TX_HARDWARE",
+		unix.SOF_TIMESTAMPING_TX_SOFTWARE:  "SOF_TIMESTAMPING_TX_SOFTWARE",
+		unix.SOF_TIMESTAMPING_RX_HARDWARE:  "SOF_TIMESTAMPING_RX_HARDWARE",
+		unix.SOF_TIMESTAMPING_RX_SOFTWARE:  "SOF_TIMESTAMPING_RX_SOFTWARE",
+		unix.SOF_TIMESTAMPING_SOFTWARE:     "SOF_TIMESTAMPING_SOFTWARE",
+		unix.SOF_TIMESTAMPING_SYS_HARDWARE: "SOF_TIMESTAMPING_SYS_HARDWARE",
+		unix.SOF_TIMESTAMPING_RAW_HARDWARE: "SOF_TIMESTAMPING_RAW_HARDWARE",
+		unix.SOF_TIMESTAMPING_OPT_ID:       "SOF_TIMESTAMPING_OPT_ID",
+		unix.SOF_TIMESTAMPING_TX_SCHED:     "SOF_TIMESTAMPING_TX_SCHED",
+		unix.SOF_TIMESTAMPING_TX_ACK:       "SOF_TIMESTAMPING_TX_ACK",
+		unix.SOF_TIMESTAMPING_OPT_CMSG:     "SOF_TIMESTAMPING_OPT_CMSG",
+		unix.SOF_TIMESTAMPING_OPT_TSONLY:   "SOF_TIMESTAMPING_OPT_TSONLY",
+		unix.SOF_TIMESTAMPING_OPT_STATS:    "SOF_TIMESTAMPING_OPT_STATS",
+		unix.SOF_TIMESTAMPING_OPT_PKTINFO:  "SOF_TIMESTAMPING_OPT_PKTINFO",
+		unix.SOF_TIMESTAMPING_OPT_TX_SWHW:  "SOF_TIMESTAMPING_OPT_TX_SWHW",
+	}
+
+	var soTimestamping = make(map[string]uint)
+
+	// https://kernel.googlesource.com/pub/scm/network/ethtool/ethtool/+/refs/tags/v5.14/ethtool.c#1653
+	for i := 0; i < len(supportedTsModes); i++ {
+		mode := info.soTimestamping & (1 << i)
+		if mode != 0 {
+			soTimestamping[supportedTsModes[uint(mode)]] = uint(mode)
+		}
+	}
+
+	supportedTxTypes := []string{
+		"HWTSTAMP_TX_OFF",
+		"HWTSTAMP_TX_ON",
+		"HWTSTAMP_TX_ONESTEP_SYNC",
+	}
+
+	txTypes := make(map[string]uint32)
+
+	for i := 0; i < len(supportedTxTypes); i++ {
+		txType := info.txTypes & (1 << i)
+		if txType != 0 {
+			txTypes[supportedTxTypes[i]] = txType
+		}
+	}
+
+	supportedRxFilters := []string{
+		"HWTSTAMP_FILTER_NONE",
+		"HWTSTAMP_FILTER_ALL",
+		"HWTSTAMP_FILTER_SOME",
+		"HWTSTAMP_FILTER_PTP_V1_L4_EVENT",
+		"HWTSTAMP_FILTER_PTP_V1_L4_SYNC",
+		"HWTSTAMP_FILTER_PTP_V1_L4_DELAY_REQ",
+		"HWTSTAMP_FILTER_PTP_V2_L4_EVENT",
+		"HWTSTAMP_FILTER_PTP_V2_L4_SYNC",
+		"HWTSTAMP_FILTER_PTP_V2_L4_DELAY_REQ",
+		"HWTSTAMP_FILTER_PTP_V2_L2_EVENT",
+		"HWTSTAMP_FILTER_PTP_V2_L2_SYNC",
+		"HWTSTAMP_FILTER_PTP_V2_L2_DELAY_REQ",
+		"HWTSTAMP_FILTER_PTP_V2_EVENT",
+		"HWTSTAMP_FILTER_PTP_V2_SYNC",
+		"HWTSTAMP_FILTER_PTP_V2_DELAY_REQ",
+		"HWTSTAMP_FILTER_NTP_ALL",
+	}
+
+	rxFilters := make(map[string]uint32)
+
+	for i := 0; i < len(supportedRxFilters); i++ {
+		rxFilter := info.txTypes & (1 << i)
+		if rxFilter != 0 {
+			rxFilters[supportedRxFilters[i]] = rxFilter
+		}
+	}
+
 	tsInfo := TsInfo{
 		Cmd:            info.cmd,
-		SoTimestamping: info.soTimestamping,
+		SoTimestamping: soTimestamping,
 		PhcIndex:       info.phcIndex,
-		TxTypes:        info.txTypes,
+		TxTypes:        txTypes,
 		TxReserved:     info.txReserved,
-		RxFilters:      info.rxFilters,
+		RxFilters:      rxFilters,
 		RxReserved:     info.rxReserved,
 	}
 
