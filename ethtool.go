@@ -171,7 +171,7 @@ type ethtoolTsInfo struct {
 // TsInfo contains timestamp information
 type TsInfo struct {
 	Cmd            uint32
-	SoTimestamping map[string]uint
+	SoTimestamping uint32
 	PhcIndex       int32
 	TxTypes        uint32
 	TxReserved     uint32
@@ -287,38 +287,9 @@ func (e *Ethtool) TimestampInfo(intf string) (TsInfo, error) {
 		return TsInfo{}, err
 	}
 
-	// https://pkg.go.dev/golang.org/x/sys/unix#SOF_TIMESTAMPING_TX_HARDWARE
-	supportedTsModes := map[uint]string{
-		unix.SOF_TIMESTAMPING_TX_HARDWARE:  "SOF_TIMESTAMPING_TX_HARDWARE",
-		unix.SOF_TIMESTAMPING_TX_SOFTWARE:  "SOF_TIMESTAMPING_TX_SOFTWARE",
-		unix.SOF_TIMESTAMPING_RX_HARDWARE:  "SOF_TIMESTAMPING_RX_HARDWARE",
-		unix.SOF_TIMESTAMPING_RX_SOFTWARE:  "SOF_TIMESTAMPING_RX_SOFTWARE",
-		unix.SOF_TIMESTAMPING_SOFTWARE:     "SOF_TIMESTAMPING_SOFTWARE",
-		unix.SOF_TIMESTAMPING_SYS_HARDWARE: "SOF_TIMESTAMPING_SYS_HARDWARE",
-		unix.SOF_TIMESTAMPING_RAW_HARDWARE: "SOF_TIMESTAMPING_RAW_HARDWARE",
-		unix.SOF_TIMESTAMPING_OPT_ID:       "SOF_TIMESTAMPING_OPT_ID",
-		unix.SOF_TIMESTAMPING_TX_SCHED:     "SOF_TIMESTAMPING_TX_SCHED",
-		unix.SOF_TIMESTAMPING_TX_ACK:       "SOF_TIMESTAMPING_TX_ACK",
-		unix.SOF_TIMESTAMPING_OPT_CMSG:     "SOF_TIMESTAMPING_OPT_CMSG",
-		unix.SOF_TIMESTAMPING_OPT_TSONLY:   "SOF_TIMESTAMPING_OPT_TSONLY",
-		unix.SOF_TIMESTAMPING_OPT_STATS:    "SOF_TIMESTAMPING_OPT_STATS",
-		unix.SOF_TIMESTAMPING_OPT_PKTINFO:  "SOF_TIMESTAMPING_OPT_PKTINFO",
-		unix.SOF_TIMESTAMPING_OPT_TX_SWHW:  "SOF_TIMESTAMPING_OPT_TX_SWHW",
-	}
-
-	var soTimestamping = make(map[string]uint)
-
-	// https://kernel.googlesource.com/pub/scm/network/ethtool/ethtool/+/refs/tags/v5.14/ethtool.c#1653
-	for i := 0; i < len(supportedTsModes); i++ {
-		mode := info.soTimestamping & (1 << i)
-		if mode != 0 {
-			soTimestamping[supportedTsModes[uint(mode)]] = uint(mode)
-		}
-	}
-
 	tsInfo := TsInfo{
 		Cmd:            info.cmd,
-		SoTimestamping: soTimestamping,
+		SoTimestamping: info.soTimestamping,
 		PhcIndex:       info.phcIndex,
 		TxTypes:        info.txTypes,
 		TxReserved:     info.txReserved,
